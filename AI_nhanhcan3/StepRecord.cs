@@ -2,8 +2,8 @@
 {
     public class StepRecord
     {
-        public string TT { get; set; } // Thứ tự
-        public string TTK { get; set; } // Trạng thái hiện tại
+        public string TT { get; set; } // Trạng thái duyệt
+        public string TTK { get; set; } // Trạng thái kề
         public int K { get; set; } // k(u, v)
         public int H { get; set; } // h(v)
         public int G { get; set; } // g(v)

@@ -48,11 +48,12 @@ namespace AI_nhanhcan3
 
                     if (line.Contains("Edges"))
                     {
+                        readingHeuristics = false;
                         readingEdges = true;
                         continue;
                     }
 
-                    if (line.Contains("heuristic"))
+                    if (line.Contains("Heuristic"))
                     {
                         readingEdges = false;
                         readingHeuristics = true;
@@ -97,68 +98,89 @@ namespace AI_nhanhcan3
         }
 
         public static List<StepRecord> BranchAndBoundSearch(
-            Dictionary<string, List<Tuple<string, int>>> graph,
-            Dictionary<string, int> heuristicValues,
-            string start,
-            string goal)
+    Dictionary<string, List<Tuple<string, int>>> graph,
+    Dictionary<string, int> heuristicValues,
+    string start,
+    string goal)
         {
             List<StepRecord> result = new List<StepRecord>();
-            var priorityQueue = new SortedSet<(int f, string state, int g)>(
-     Comparer<(int, string, int)>.Create((a, b) => a.Item1 == b.Item1 ? a.Item2.CompareTo(b.Item2) : a.Item1.CompareTo(b.Item1))
- );
 
-            HashSet<string> visited = new HashSet<string>();
-            priorityQueue.Add((heuristicValues[start], start, 0));
+            // Initialize list L with the start state
+            var L = new List<string> { start };
+            int cost = int.MaxValue; // Initialize cost to a very large value
 
-            while (priorityQueue.Count > 0)
+            // Dictionary to store the best g values for each state
+            Dictionary<string, int> visited = new Dictionary<string, int>
+    {
+        { start, 0 }
+    };
+
+            while (L.Count > 0) // Main loop
             {
-                var (currentF, currentState, currentG) = priorityQueue.Min;
-                priorityQueue.Remove(priorityQueue.Min);
+                // Remove the state at the front of the list L
+                string currentState = L[0];
+                L.RemoveAt(0);
 
+                // Check if the current state is the goal state
+                int currentG = visited[currentState]; // g(u)
                 if (currentState == goal)
                 {
-                    result.Add(new StepRecord
+                    // Update cost if the current path is better
+                    if (currentG <= cost)
                     {
-                        TT = result.Count.ToString(),
-                        TTK = currentState,
-                        K = 0,
-                        G = currentG,
-                        H = heuristicValues[currentState],
-                        F = currentF,
-                        DSL1 = "",
-                        DSL = string.Join(",", result.Select(r => r.TTK))
-                    });
-                    break;
+                        cost = currentG;
+
+                        result.Add(new StepRecord
+                        {
+                            TT = currentState, // Updated to reflect the current state
+                            TTK = "", // No adjacent state since it's the goal
+                            K = 0,
+                            G = currentG,
+                            H = heuristicValues[currentState],
+                            F = currentG + heuristicValues[currentState], // F = G + H
+                            DSL1 = "",
+                            DSL = string.Join(",", result.Select(r => r.TTK))
+                        });
+                    }
+                    continue; // Go back to the beginning of the loop
                 }
 
-                if (!visited.Contains(currentState))
+                // Expand the current state
+                var neighbors = graph.GetValueOrDefault(currentState, new List<Tuple<string, int>>());
+                var L1 = new List<(string state, int g, int f)>(); // Temporary list for next states
+
+                foreach (var neighbor in neighbors)
                 {
-                    visited.Add(currentState);
-                    var neighbors = graph.GetValueOrDefault(currentState, new List<Tuple<string, int>>());
+                    string neighborState = neighbor.Item1;
+                    int edgeCost = neighbor.Item2;
+                    int newG = currentG + edgeCost; // Calculate g(v)
+                    int newF = newG + heuristicValues[neighborState]; // Calculate f(v)
 
-                    foreach (var neighbor in neighbors)
+                    // Check if we should add the neighbor to L1
+                    if (!visited.ContainsKey(neighborState) || newG < visited[neighborState])
                     {
-                        string neighborState = neighbor.Item1;
-                        int edgeCost = neighbor.Item2;
-                        int newG = currentG + edgeCost;
-                        int newF = newG + heuristicValues[neighborState];
+                        visited[neighborState] = newG; // Update the best g value
+                        L1.Add((neighborState, newG, newF)); // Add the neighbor to L1
 
-                        if (!visited.Contains(neighborState))
+                        result.Add(new StepRecord
                         {
-                            priorityQueue.Add((newF, neighborState, newG));
-                            result.Add(new StepRecord
-                            {
-                                TT = result.Count.ToString(),
-                                TTK = neighborState,
-                                K = edgeCost,
-                                G = newG,
-                                H = heuristicValues[neighborState],
-                                F = newF,
-                                DSL1 = string.Join(",", neighbors.Select(n => n.Item1)),
-                                DSL = string.Join(",", result.Select(r => r.TTK))
-                            });
-                        }
+                            TT = currentState, // Current state
+                            TTK = neighborState, // Neighbor state
+                            K = edgeCost,
+                            G = newG,
+                            H = heuristicValues[neighborState],
+                            F = newF,
+                            DSL1 = string.Join(",", neighbors.Select(n => n.Item1)),
+                            DSL = string.Join(",", result.Select(r => r.TTK))
+                        });
                     }
+                }
+
+                // Sort L1 by f(v) and add it to the front of L
+                L1.Sort((a, b) => a.f.CompareTo(b.f));
+                foreach (var item in L1)
+                {
+                    L.Insert(0, item.state); // Insert states from L1 to L
                 }
             }
 
