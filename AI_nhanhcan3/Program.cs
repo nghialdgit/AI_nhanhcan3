@@ -117,29 +117,25 @@ namespace AI_nhanhcan3
                 var (currentF, currentState, currentG) = priorityQueue.Min;
                 priorityQueue.Remove(priorityQueue.Min);
 
-                int cost = int.MaxValue;
-
                 if (visited.Contains(currentState))
                     continue;
 
+                dslList.Add(currentState);
+
                 if (currentState == goal)
                 {
-                    if (currentF <= cost)
+                    result.Add(new StepRecord
                     {
-                        result.Add(new StepRecord
-                        {
-                            TT = currentState,
-                            TTK = "",
-                            K = 0,
-                            G = currentG,
-                            H = heuristicValues[currentState],
-                            F = currentF,
-                            DSL1 = "",
-                            DSL = string.Join(",", dslList)
-                        });
-                    }
-
-                    continue;
+                        TT = currentState,
+                        TTK = "",
+                        K = 0,
+                        G = currentG,
+                        H = heuristicValues[currentState],
+                        F = currentF,
+                        DSL1 = "",
+                        DSL = string.Join(",", dslList)
+                    });
+                    break;
                 }
 
                 var neighbors = graph.GetValueOrDefault(currentState, new List<Tuple<string, int>>());
