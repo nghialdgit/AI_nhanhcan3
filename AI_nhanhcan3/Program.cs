@@ -98,6 +98,15 @@ namespace AI_nhanhcan3
             return graphData;
         }
 
+        public static string GetFirstCharacter(string input)
+        {
+            if (!string.IsNullOrEmpty(input))
+            {
+                return input[0].ToString(); // Trả về ký tự đầu tiên như chuỗi
+            }
+            return string.Empty; // Trả về chuỗi rỗng nếu input null hoặc empty
+        }
+
         public static List<StepRecord> BranchAndBoundSearch(
            Dictionary<string, List<Tuple<string, int>>> graph,
            Dictionary<string, int> heuristicValues,
@@ -111,16 +120,12 @@ namespace AI_nhanhcan3
             HashSet<string> visited = new HashSet<string>();
             priorityQueue.Add((heuristicValues[start], start, 0));
             List<string> dslList = new List<string>();
+            string currentStateNext = start;
 
             while (priorityQueue.Count > 0)
             {
                 var (currentF, currentState, currentG) = priorityQueue.Min;
                 priorityQueue.Remove(priorityQueue.Min);
-
-                if (visited.Contains(currentState))
-                    continue;
-
-                dslList.Add(currentState);
 
                 if (currentState == goal)
                 {
@@ -153,6 +158,13 @@ namespace AI_nhanhcan3
                 .ThenBy(item => item[0])
                 .ToList();
 
+                var startF = dsl1.First();
+
+                if (!string.IsNullOrEmpty(startF))
+                {
+                    start = startF[0].ToString(); // Trả về ký tự đầu tiên như chuỗi
+                }
+
                 dslList.InsertRange(0, dsl1);
 
                 foreach (var (neighborState, edgeCost, newG, newF) in sortedNeighbors)
@@ -177,7 +189,8 @@ namespace AI_nhanhcan3
                     {
                         if (dslList.Count > 0 && dslList[0].StartsWith(currentState))
                         {
-                            dslList.RemoveAt(0);
+                            var fistList = dslList[0];
+                            dslList.Remove(fistList);
                         }
                         newSteprecrd.TT = currentState;
                         newSteprecrd.DSL1 = string.Join(",", dsl1);
