@@ -291,7 +291,7 @@ namespace AI_nhanhcan3
                         writer.WriteLine(formatGoal,
                             CenterText(node.TT, 3),
                             CenterText(node.TTK, 60),
-                            "DSL".PadRight(20));
+                            node.DSL.PadRight(20));
                     }
                     else
                     {
