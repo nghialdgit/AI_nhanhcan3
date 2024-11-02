@@ -68,11 +68,18 @@ namespace AI_nhanhcan3
                         var parts = line.Split(' ');
                         if (parts.Length != 3 || !int.TryParse(parts[2], out int cost))
                         {
-                            Console.WriteLine($"Invalid edge format: {line}. Expected: 'StartNode EndNode Cost'");
+                            Console.WriteLine($"lỗi fomat: {line}. Fomat: 'Điểm đầu, Điểm Cuối, Chí Phí'");
                             continue;
                         }
                         var start = parts[0];
                         var end = parts[1];
+
+                        if (graphData.Graph.ContainsKey(end) &&
+                            graphData.Graph[end].Any(edge => edge.StateEnd == start && edge.StateCost != cost))
+                        {
+                            Console.WriteLine($"Lỗi chiều đồ thị: {start} => {end} = {cost} không thể {end} => {start} với chi phí khác.");
+                            continue;
+                        }
 
                         if (!graphData.Graph.ContainsKey(start))
                             graphData.Graph[start] = new List<GraphDataState>();
@@ -280,7 +287,7 @@ namespace AI_nhanhcan3
                 {
                     var ttFlag = node.TT;
 
-                    if (node.TT == lastTT) 
+                    if (node.TT == lastTT)
                     {
                         node.TT = "";
                     }
